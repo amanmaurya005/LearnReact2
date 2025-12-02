@@ -38,7 +38,7 @@ export default function Bcrypt_Login() {
     }
 
     // compare entered password with hashed saved password
-    const passwordMatch = bcrypt.compareSync(
+    const passwordMatch = bcrypt.compare(
       data.password,
       userMatch.password
     );

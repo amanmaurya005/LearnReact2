@@ -4,6 +4,7 @@ import bcrypt from "bcryptjs";
 
 export default function Bcrypt_Register() {
   const navigate = useNavigate();
+  const [mailCheck, setMailCheck] = useState(false);
 
   const [data, setData] = useState({
     name: "",
@@ -13,30 +14,39 @@ export default function Bcrypt_Register() {
   });
 
   const [users, setUsers] = useState(
-    localStorage.getItem("storedData") !== null
-      ? JSON.parse(localStorage.getItem("storedData"))
-      : []
+    JSON.parse(localStorage.getItem("storedData")) || []
   );
 
+  // handle input
   function handleChange(e) {
     const { name, value } = e.target;
     setData({ ...data, [name]: value });
   }
 
+  // check email exists
+  function emailCheck() {
+    const exists = users.some((u) => u.email === data.email);
+    setMailCheck(exists);
+  }
+
+  // submit
   function handleSubmit(e) {
     e.preventDefault();
 
-    // hash password before saving
-    const hashedPassword = bcrypt.hashSync(data.password, 10);
+    if (mailCheck) {
+      alert("Email already exists!");
+      return;
+    }
 
-    const BcryptPassword = {
+    const hashedPassword = bcrypt.hash(data.password, 10);
+
+    const userData = {
       ...data,
-      password: hashedPassword, // save hashed password only
+      password: hashedPassword,
     };
 
-    setUsers([...users, BcryptPassword]);
+    setUsers([...users, userData]);
 
-    // reset form
     setData({
       name: "",
       username: "",
@@ -58,8 +68,8 @@ export default function Bcrypt_Register() {
       <form onSubmit={handleSubmit}>
         <input
           type="text"
-          placeholder="Enter Name"
           name="name"
+          placeholder="Enter Name"
           value={data.name}
           onChange={handleChange}
         />
@@ -81,12 +91,15 @@ export default function Bcrypt_Register() {
           placeholder="Email"
           value={data.email}
           onChange={handleChange}
+          onBlur={emailCheck}     
           required
         />
-        <br /><br />
-
-       
         <br />
+
+        {mailCheck && (
+          <span style={{ color: "red" }}>Email already exists</span>
+        )}
+        <br /><br />
 
         <input
           type="password"
@@ -99,8 +112,8 @@ export default function Bcrypt_Register() {
         <br /><br />
 
         <button type="submit">Register</button>
-        <br /><br />
 
+        <br /><br />
         <p>
           <Link to="/login">Already have an account? Login</Link>
         </p>
